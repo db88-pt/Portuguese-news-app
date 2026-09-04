@@ -15,8 +15,6 @@ if not api_key:
 # Initialize the Gemini Client
 client = genai.Client(api_key=api_key)
 
-st.write([m.name for m in client.models.list()])
-
 st.title("Notícias em Português 📰")
 
 # Sidebar preference controls
