@@ -74,7 +74,7 @@ else:
             with st.spinner("A adaptar o texto..."):
                 try:
                     response = client.models.generate_content(
-                        model='models/gemini-2.5-flash',
+                        model='models/gemini-flash-latest',
                         contents=prompt
                     )
                     st.write(response.text)
