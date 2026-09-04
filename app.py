@@ -1,97 +1,144 @@
 import streamlit as st
 import feedparser
 from google import genai
+from datetime import datetime, timedelta
 
-# Mobile page setup
-st.set_page_config(page_title="Notícias em Português", page_icon="📰", layout="centered")
+# Mobile UI styling cleanup
+st.markdown("""
+    <style>
+        .block-container { padding-top: 1rem; padding-bottom: 1rem; }
+    </style>
+""", unsafe_allow_html=True)
 
-# Get API key securely from Streamlit Cloud secrets
-api_key = st.secrets.get("GEMINI_API_KEY")
+# Initialize Gemini Client via Streamlit Secrets
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-if not api_key:
-    st.error("Erro: A chave GEMINI_API_KEY não foi encontrada nos segredos do Streamlit.")
-    st.stop()
+# Fetch RSS feed and initialize Session State memory
+feed = feedparser.parse("http://feeds.bbci.co.uk/news/rss.xml")
 
-# Initialize the Gemini Client
-client = genai.Client(api_key=api_key)
+if "dismissed" not in st.session_state:
+    st.session_state.dismissed = []
 
-st.title("Notícias em Português 📰")
+if "read_later" not in st.session_state:
+    st.session_state.read_later = []
 
-# Sidebar preference controls
-st.sidebar.header("Preferências")
-category = st.sidebar.selectbox(
-    "Escolha a fonte de notícias:",
-    ["BBC - Principais Notícias", "BBC - Reino Unido", "BBC - Mundo", "The Guardian - Reino Unido", "The Guardian - Cultura"]
-)
+# Cleanup 7+ day old items from "Read Later"
+now = datetime.now()
+st.session_state.read_later = [
+    item for item in st.session_state.read_later 
+    if now - item[1] < timedelta(days=7)
+]
 
-level = st.sidebar.select_slider(
-    "Nível de Português:",
-    options=["A1", "A2", "B1", "B2"],
-    value="A2"
-)
+# Filter out dismissed articles from the main feed stream
+active_articles = [
+    art for art in feed.entries 
+    if art.link not in st.session_state.dismissed
+]
 
-# RSS feeds from BBC News and The Guardian
-RSS_FEEDS = {
-    "BBC - Principais Notícias": "http://feeds.bbci.co.uk/news/rss.xml",
-    "BBC - Reino Unido": "http://feeds.bbci.co.uk/news/uk/rss.xml",
-    "BBC - Mundo": "http://feeds.bbci.co.uk/news/world/rss.xml",
-    "The Guardian - Reino Unido": "https://www.theguardian.com/uk/rss",
-    "The Guardian - Cultura": "https://www.theguardian.com/culture/rss"
-}
-    
+# Sidebar controls: Mode switcher and CEFR Level selector
+app_mode = st.sidebar.radio("Modo de Leitura", ["Feed Principal", "Ler Mais Tarde"])
+selected_level = st.sidebar.selectbox("Nível CEFR", ["A1", "A2", "B1", "B2"])
 
-# Fetch and parse the selected feed
-feed_url = RSS_FEEDS[category]
-feed = feedparser.parse(feed_url)
-
-if not feed.entries:
-    st.info("Não foi possível carregar as notícias neste momento. Tente novamente mais tarde.")
+# Handle "Read Later" view
+if app_mode == "Ler Mais Tarde":
+    st.subheader("📚 Artigos Guardados (7 dias máx)")
+    if not st.session_state.read_later:
+        st.info("Ainda não guardaste nenhum artigo.")
+    else:
+        saved_articles = [item[0] for item in st.session_state.read_later]
+        if "saved_index" not in st.session_state:
+            st.session_state.saved_index = 0
+        
+        st.session_state.saved_index = min(st.session_state.saved_index, len(saved_articles) - 1)
+        current_article = saved_articles[st.session_state.saved_index]
+        
+        st.write(f"Artigo {st.session_state.saved_index + 1} de {len(saved_articles)}")
+        if st.button("Próximo guardado ➡️") and st.session_state.saved_index < len(saved_articles) - 1:
+            st.session_state.saved_index += 1
+            st.rerun()
+            
+        display_article = True
 else:
-    for item in feed.entries[:5]: # Display top 5 articles
-        st.subheader(item.title)
+    # Handle Main Feed view
+    if "article_index" not in st.session_state:
+        st.session_state.article_index = 0
         
-        summary = item.get("summary", "")
+    st.session_state.article_index = min(st.session_state.article_index, max(0, len(active_articles) - 1))
+    
+    if not active_articles:
+        st.write("Sem mais artigos disponíveis no momento.")
+        display_article = False
+    else:
+        current_article = active_articles[st.session_state.article_index]
+        display_article = True
         
-        if level == "Texto Original":
-            st.write(summary)
-        else:
-            prompt = f"""
-            You are a European Portuguese language teacher.
-            Rewrite, adapt and translate the following English news summary into European Portuguese suitable for a {level} CEFR learner.
-            Instructions for A1 Level:
-            - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
-            - Keep sentences extremely short (max 5-8 words per sentence)
-            - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
-            - Use basic, everyday European Portuguese vocabulary suitable for complete beginners.
+        # Navigation controls
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col1:
+            if st.button("⬅️ Anterior") and st.session_state.article_index > 0:
+                st.session_state.article_index -= 1
+                st.rerun()
+        with col2:
+            st.write(f"**{st.session_state.article_index + 1} / {len(active_articles)}**")
+        with col3:
+            if st.button("Próximo ➡️") and st.session_state.article_index < len(active_articles) - 1:
+                st.session_state.article_index += 1
+                st.rerun()
 
-            Instructions for A2 Level:
-            - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
-            - Keep sentences short (max 30 words per sentence)
-            - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
-            - Use basic, everyday European Portuguese vocabulary suitable for beginners.
-            - If the user clicks on a word, use a pop up to translate the word and explain it in the context of the sentence.
-            
-            Rules:
-            - Translate from English into European Portuguese (pt-PT). Maintain European Portuguese spelling, grammar, and phrasing (pt-PT).
-            - Keep the original facts and context intact.
-            - Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {level}.
-            - Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
-            
-            Summary:
-            {summary}
-            """
-            
-            with st.spinner("A adaptar o texto..."):
-                try:
-                    response = client.models.generate_content(
-                        model='models/gemini-flash-latest',
-                        contents=prompt
-                    )
-                    st.write(response.text)
-                except Exception as e:
-                    st.error("Erro ao adaptar com Gemini. A mostrar texto original:")
-                    st.write(summary)
-        
-        st.markdown(f"[Ler artigo completo na RTP ↗]({item.link})")
-        st.divider()
-      
+# Render Current Article & Action Buttons
+if display_article and current_article:
+    st.divider()
+    
+    act_col1, act_col2 = st.columns(2)
+    with act_col1:
+        if st.button("❌ Não tenho interesse"):
+            st.session_state.dismissed.append(current_article.link)
+            if app_mode == "Feed Principal":
+                st.session_state.article_index = max(0, st.session_state.article_index - 1)
+            st.rerun()
+    with act_col2:
+        if app_mode == "Feed Principal":
+            if st.button("📌 Ler mais tarde"):
+                st.session_state.read_later.append((current_article, datetime.now()))
+                st.success("Guardado!")
+                st.rerun()
+
+    # Dynamic Prompt incorporating your exact instructions
+    prompt = f"""
+    You are a European Portuguese language teacher.
+    Rewrite, adapt and translate the following English news summary into European Portuguese suitable for a {selected_level} CEFR learner.
+
+    Instructions for A1 Level:
+    - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
+    - Keep sentences extremely short (max 5-8 words per sentence)
+    - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
+    - Use basic, everyday European Portuguese vocabulary suitable for complete beginners.
+
+    Instructions for A2 Level:
+    - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
+    - Keep sentences short (max 30 words per sentence)
+    - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
+    - Use basic, everyday European Portuguese vocabulary suitable for beginners.
+    - Provide clear contextual vocabulary notes for key terms.
+
+    Rules:
+    - Translate from English into European Portuguese (pt-PT). Maintain European Portuguese spelling, grammar, and phrasing (pt-PT).
+    - Keep the original facts and context intact.
+    - Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {selected_level}.
+    - Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
+
+    Text to adapt: {current_article.summary}
+    """
+
+    try:
+        response = client.models.generate_content(
+            model='models/gemini-2.5-flash',
+            contents=prompt
+        )
+        st.markdown(response.text)
+    except Exception as e:
+        st.error(f"Erro ao carregar tradução: {e}")
+        st.write(current_article.summary)
+
+    st.markdown(f"[Ler artigo completo na source]({current_article.link})")
+    
