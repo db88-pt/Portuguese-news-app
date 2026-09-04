@@ -132,7 +132,7 @@ if display_article and current_article:
 
     try:
         response = client.models.generate_content(
-            model='models/gemini-2.5-flash',
+            model='models/gemini-flash-latest',
             contents=prompt
         )
         st.markdown(response.text)
