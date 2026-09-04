@@ -58,12 +58,24 @@ else:
             prompt = f"""
             You are a European Portuguese language teacher.
             Rewrite, adapt and translate the following English news summary into European Portuguese suitable for a {level} CEFR learner.
+            Instructions for A1 Level:
+            - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
+            - Keep sentences extremely short (max 5-8 words per sentence)
+            - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
+            - Use basic, everyday European Portuguese vocabulary suitable for complete beginners.
+
+            Instructions for A2 Level:
+            - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
+            - Keep sentences short (max 30 words per sentence)
+            - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
+            - Use basic, everyday European Portuguese vocabulary suitable for beginners.
+            - If the user clicks on a word, use a pop up to translate the word and explain it in the context of the sentence.
             
             Rules:
             - Translate from English into European Portuguese (pt-PT). Maintain European Portuguese spelling, grammar, and phrasing (pt-PT).
             - Keep the original facts and context intact.
             - Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {level}.
-            - Output the rewritten Portuguese text, but add intro or outro notes if this is suitable.
+            - Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
             
             Summary:
             {summary}
