@@ -130,15 +130,16 @@ if display_article and current_article:
     Text to adapt: {current_article.summary}
     """
 
-    try:
+        try:
         response = client.models.generate_content(
-            model='models/gemini-flash-latest',
+            model='models/gemini-2.5-flash',
             contents=prompt
         )
         st.markdown(response.text)
     except Exception as e:
         st.error(f"Erro ao carregar tradução: {e}")
         st.write(current_article.summary)
+
 
     st.markdown(f"[Ler artigo completo na source]({current_article.link})")
     
