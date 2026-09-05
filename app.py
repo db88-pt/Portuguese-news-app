@@ -140,6 +140,5 @@ if display_article and current_article:
         st.error(f"Erro ao carregar tradução: {e}")
         st.write(current_article.summary)
 
-
     st.markdown(f"[Ler artigo completo na source]({current_article.link})")
     
