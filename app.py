@@ -130,7 +130,7 @@ if display_article and current_article:
     Text to adapt: {current_article.summary}
     """
 
-        try:
+    try:
         response = client.models.generate_content(
             model='models/gemini-2.5-flash',
             contents=prompt
