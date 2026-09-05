@@ -33,7 +33,7 @@ st.session_state.read_later = [
 active_articles = [
     art for art in feed.entries 
     if art.link not in st.session_state.dismissed
-]
+][:5]
 
 # Sidebar controls: Mode switcher and CEFR Level selector
 app_mode = st.sidebar.radio("Modo de Leitura", ["Feed Principal", "Ler Mais Tarde"])
@@ -127,7 +127,8 @@ if display_article and current_article:
     - Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {selected_level}.
     - Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
 
-    Text to adapt: {current_article.summary}
+    Original Title: {current_article.title}
+    Original Text: {current_article.summary}
     """
 
     try:
