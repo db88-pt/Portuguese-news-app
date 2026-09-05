@@ -95,7 +95,7 @@ if display_article and current_article:
             st.session_state.dismissed.append(current_article.link)
             if app_mode == "Feed Principal":
                 st.session_state.article_index = max(0, st.session_state.article_index - 1)
-            st.rerun()
+                st.rerun()
     with act_col2:
         if app_mode == "Feed Principal":
             if st.button("📌 Ler mais tarde"):
