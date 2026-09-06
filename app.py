@@ -92,31 +92,41 @@ if display_article and current_article:
     Original Text: {current_article.summary}
     """
 
-    max_retries = 3
-    response = None
+    if "gemini_cache" not in st.session_state:
+        st.session_state.gemini_cache = {}
 
-    with st.spinner("A preparar o artigo..."):
-        for attempt in range(max_retries):
-            try:
-                response = client.models.generate_content(
-                    model='gemini-3.1-flash-lite',
-                    contents=prompt
-                )
-                break  # Success! Exit the loop immediately.
-            except Exception as e:
-                if "503" in str(e) and attempt < max_retries - 1:
-                    time.sleep(2)  # Transient error — wait, then let the loop try again
-                elif "503" in str(e):
-                    # Last attempt, still failing
-                    st.error(f"Erro ao carregar tradução após tentativas: {e}")
-                    break
-                else:
-                    # Not a 503 — retrying won't help, stop now
-                    st.error(f"Erro ao carregar tradução: {e}")
-                    break
+    cache_key = (current_article.link, selected_level)
 
-    if response and hasattr(response, 'text'):
-        st.markdown(response.text)
+    if cache_key in st.session_state.gemini_cache:
+        full_text = st.session_state.gemini_cache[cache_key]
+    else:
+        max_retries = 3
+        response = None
+
+        with st.spinner("A preparar o artigo..."):
+            for attempt in range(max_retries):
+                try:
+                    response = client.models.generate_content(
+                        model='gemini-3.1-flash-lite',
+                        contents=prompt
+                    )
+                    break
+                except Exception as e:
+                    if "503" in str(e) and attempt < max_retries - 1:
+                        time.sleep(2)
+                    elif "503" in str(e):
+                        st.error(f"Erro ao carregar tradução após tentativas: {e}")
+                        break
+                    else:
+                        st.error(f"Erro ao carregar tradução: {e}")
+                        break
+
+        full_text = response.text if response and hasattr(response, 'text') else None
+        if full_text:
+            st.session_state.gemini_cache[cache_key] = full_text
+
+    if full_text:
+        st.markdown(full_text)
         
         import streamlit.components.v1 as components
 
@@ -147,7 +157,7 @@ if display_article and current_article:
                 return;
             }}
             window.speechSynthesis.cancel();
-            const text = cleanText({json.dumps(response.text)});
+            const text = cleanText({json.dumps(full_text)});
             utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'pt-PT';
             window.speechSynthesis.speak(utterance);
