@@ -185,7 +185,11 @@ if response and hasattr(response, 'text'):
     let utterance = null;
 
     function cleanText(rawText) {{
-        return rawText.replace(/[#*_-]/g, '');
+        // 1. Cut off everything starting from vocabulary/notes sections so audio skips them
+        let storyOnly = rawText.split(/(Vocabulário|Notas|Vocabulary|Notes)/i)[0];
+        
+        // 2. Strip out markdown symbols like #, *, or - so it reads naturally
+        return storyOnly.replace(/[#*_-]/g, '').trim();
     }}
 
     function playSpeech() {{
@@ -214,5 +218,6 @@ if response and hasattr(response, 'text'):
     </script>
     """
     components.html(speech_html, height=60)
+
 
 st.markdown(f"[Ler artigo completo na source]({current_article.link})")
