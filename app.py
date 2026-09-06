@@ -162,5 +162,8 @@ for attempt in range(max_retries):
                 st.error(f"Erro ao carregar tradução após tentativas: {e}")
             else:
                 st.error(f"Erro ao carregar tradução: {e}")
+
+if response and hasattr(response, 'text'):
+    st.markdown(response.text)
                 
 st.markdown(f"[Ler artigo completo na source]({current_article.link})")
