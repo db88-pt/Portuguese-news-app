@@ -70,6 +70,7 @@ if display_article and current_article:
     Keep the original facts and context intact.
     Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {selected_level}.
     Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
+    Provide clear contextual vocabulary notes for key terms and words. These should be in English and provide context and guidance 
 
     Instructions for A1 Level:
     - Keep sentences extremely short (max 5-8 words per sentence)
@@ -80,15 +81,12 @@ if display_article and current_article:
     - Keep sentences short (max 30 words per sentence)
     - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
     - Use basic, everyday European Portuguese vocabulary suitable for beginners.
-    - Provide clear contextual vocabulary notes for key terms.
 
     Instructions for B1 Level:
     - Use moderate sentence complexity, everyday idiomatic expressions, and mixed tenses.
-    - Provide helpful vocabulary notes for key intermediate terms.
 
     Instructions for B2 Level:
     - Use natural, fluid European Portuguese syntax with upper-intermediate sentence structures.
-    - Provide advanced vocabulary notes for nuanced phrasing.
 
     Original Title: {current_article.title}
     Original Text: {current_article.summary}
