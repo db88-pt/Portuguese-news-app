@@ -3,6 +3,7 @@ import feedparser
 from google import genai
 from datetime import datetime
 import time
+import json
 
 # Mobile UI styling cleanup
 st.markdown("""
@@ -142,7 +143,7 @@ if display_article and current_article:
                 return;
             }}
             window.speechSynthesis.cancel();
-            const text = cleanText({repr(response.text)});
+            const text = cleanText({json.dumps(response.text)});
             utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'pt-PT';
             window.speechSynthesis.speak(utterance);
