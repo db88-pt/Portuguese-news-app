@@ -2,6 +2,7 @@ import streamlit as st
 import feedparser
 from google import genai
 from datetime import datetime, timedelta
+import time
 
 # Mobile UI styling cleanup
 st.markdown("""
@@ -85,7 +86,7 @@ else:
                 st.session_state.article_index += 1
                 st.rerun()
 
-# Render Current Article & Action Buttons
+# Render Current Article & Action Buttons (Everything below is properly indented inside this check)
 if display_article and current_article:
     st.divider()
     
@@ -142,82 +143,79 @@ if display_article and current_article:
     Original Text: {current_article.summary}
     """
 
-    import time
+    max_retries = 3
+    response = None
 
-max_retries = 3
-response = None
-
-for attempt in range(max_retries):
-    try:
-        response = client.models.generate_content(
-            model='gemini-3.5-flash',
-            contents=prompt
-        )
-        break  # Success! Exit the loop immediately.
-    except Exception as e:
-        if "503" in str(e) and attempt < max_retries - 1:
-            time.sleep(2)  # Wait 2 seconds before trying again
-        else:
-            if attempt == max_retries - 1:
-                st.error(f"Erro ao carregar tradução após tentativas: {e}")
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-3.5-flash',
+                contents=prompt
+            )
+            break  # Success! Exit the loop immediately.
+        except Exception as e:
+            if "503" in str(e) and attempt < max_retries - 1:
+                time.sleep(2)  # Wait 2 seconds before trying again
             else:
-                st.error(f"Erro ao carregar tradução: {e}")
+                if attempt == max_retries - 1:
+                    st.error(f"Erro ao carregar tradução após tentativas: {e}")
+                else:
+                    st.error(f"Erro ao carregar tradução: {e}")
 
-if response and hasattr(response, 'text'):
-    st.markdown(response.text)
-    
-    import streamlit.components.v1 as components
-
-    speech_html = f"""
-    <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 8px;">
-        <button onclick="playSpeech()" style="padding: 6px 12px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-            ▶️ Ouvir
-        </button>
-        <button onclick="pauseSpeech()" style="padding: 6px 12px; background-color: #e65c00; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-            ⏸️ Pausa
-        </button>
-        <button onclick="stopSpeech()" style="padding: 6px 12px; background-color: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-            ⏹️ Parar
-        </button>
-    </div>
-
-    <script>
-    let utterance = null;
-
-    function cleanText(rawText) {{
-        // 1. Cut off everything starting from vocabulary/notes sections so audio skips them
-        let storyOnly = rawText.split(/(Vocabulário|Notas|Vocabulary|Notes)/i)[0];
+    if response and hasattr(response, 'text'):
+        st.markdown(response.text)
         
-        // 2. Strip out markdown symbols like #, *, or - so it reads naturally
-        return storyOnly.replace(/[#*_-]/g, '').trim();
-    }}
+        import streamlit.components.v1 as components
 
-    function playSpeech() {{
-        if (window.speechSynthesis.paused && utterance) {{
-            window.speechSynthesis.resume();
-            return;
+        speech_html = f"""
+        <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 8px;">
+            <button onclick="playSpeech()" style="padding: 6px 12px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                ▶️ Ouvir
+            </button>
+            <button onclick="pauseSpeech()" style="padding: 6px 12px; background-color: #e65c00; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                ⏸️ Pausa
+            </button>
+            <button onclick="stopSpeech()" style="padding: 6px 12px; background-color: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                ⏹️ Parar
+            </button>
+        </div>
+
+        <script>
+        let utterance = null;
+
+        function cleanText(rawText) {{
+            // 1. Cut off everything starting from vocabulary/notes sections so audio skips them
+            let storyOnly = rawText.split(/(Vocabulário|Notas|Vocabulary|Notes)/i)[0];
+            
+            // 2. Strip out markdown symbols like #, *, or - so it reads naturally
+            return storyOnly.replace(/[#*_-]/g, '').trim();
         }}
-        
-        window.speechSynthesis.cancel();
-        
-        const text = cleanText({repr(response.text)});
-        utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'pt-PT';
-        window.speechSynthesis.speak(utterance);
-    }}
 
-    function pauseSpeech() {{
-        if (window.speechSynthesis.speaking) {{
-            window.speechSynthesis.pause();
+        function playSpeech() {{
+            if (window.speechSynthesis.paused && utterance) {{
+                window.speechSynthesis.resume();
+                return;
+            }}
+            
+            window.speechSynthesis.cancel();
+            
+            const text = cleanText({repr(response.text)});
+            utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pt-PT';
+            window.speechSynthesis.speak(utterance);
         }}
-    }}
 
-    function stopSpeech() {{
-        window.speechSynthesis.cancel();
-    }}
-    </script>
-    """
-    components.html(speech_html, height=60)
+        function pauseSpeech() {{
+            if (window.speechSynthesis.speaking) {{
+                window.speechSynthesis.pause();
+            }}
+        }}
 
+        function stopSpeech() {{
+            window.speechSynthesis.cancel();
+        }}
+        </script>
+        """
+        components.html(speech_html, height=60)
 
-st.markdown(f"[Ler artigo completo na source]({current_article.link})")
+    st.markdown(f"[Ler artigo completo na source]({current_article.link})")
