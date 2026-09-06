@@ -142,15 +142,26 @@ if display_article and current_article:
     Original Text: {current_article.summary}
     """
 
+    import time
+
+max_retries = 3
+response = None
+
+for attempt in range(max_retries):
     try:
         response = client.models.generate_content(
-            model='models/gemini-3.6-flash',
+            model='gemini-3.5-flash',
             contents=prompt
         )
-        st.markdown(response.text)
+        break  # Success! Exit the loop immediately.
     except Exception as e:
-        st.error(f"Erro ao carregar tradução: {e}")
-        st.write(current_article.summary)
+        if "503" in str(e) and attempt < max_retries - 1:
+            time.sleep(2)  # Wait 2 seconds before trying again
+        else:
+            if attempt == max_retries - 1:
+                st.error(f"Erro ao carregar tradução após tentativas: {e}")
+            else:
+                st.error(f"Erro ao carregar tradução: {e}")
 
-    st.markdown(f"[Ler artigo completo na source]({current_article.link})")
+   st.markdown(f"[Ler artigo completo na source]({current_article.link})")
     
