@@ -54,36 +54,31 @@ if display_article and current_article:
     prompt = f"""
     You are a European Portuguese language teacher.
     Rewrite, adapt and translate the following English news summary into European Portuguese suitable for a {selected_level} CEFR learner.
-    With all levels, heavily adapt and change the article if needed - Portuguese language practice is more important than copying the article exactly 
+    With all levels, heavily adapt and change the article if needed - Portuguese language practice is more important than copying the article exactly
+    Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
+    Translate from English into European Portuguese (pt-PT). Maintain European Portuguese spelling, grammar, and phrasing (pt-PT).
+    Keep the original facts and context intact.
+    Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {selected_level}.
+    Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
 
     Instructions for A1 Level:
-    - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
     - Keep sentences extremely short (max 5-8 words per sentence)
     - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
     - Use basic, everyday European Portuguese vocabulary suitable for complete beginners.
 
     Instructions for A2 Level:
-    - Output ONLY the structured sections requested below. DO NOT include any introductory conversational text (e.g., "Olá! Here is an adapted version...").
     - Keep sentences short (max 30 words per sentence)
     - Use present tense verbs where possible (e.g., use 'há' instead of 'houve').
     - Use basic, everyday European Portuguese vocabulary suitable for beginners.
     - Provide clear contextual vocabulary notes for key terms.
 
     Instructions for B1 Level:
-    - Output ONLY the structured sections requested. DO NOT include introductory conversational text.
     - Use moderate sentence complexity, everyday idiomatic expressions, and mixed tenses.
     - Provide helpful vocabulary notes for key intermediate terms.
 
     Instructions for B2 Level:
-    - Output ONLY the structured sections requested. DO NOT include introductory conversational text.
     - Use natural, fluid European Portuguese syntax with upper-intermediate sentence structures.
     - Provide advanced vocabulary notes for nuanced phrasing.
-
-    Rules:
-    - Translate from English into European Portuguese (pt-PT). Maintain European Portuguese spelling, grammar, and phrasing (pt-PT).
-    - Keep the original facts and context intact.
-    - Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {selected_level}.
-    - Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
 
     Original Title: {current_article.title}
     Original Text: {current_article.summary}
