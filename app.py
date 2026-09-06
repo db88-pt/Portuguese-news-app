@@ -12,7 +12,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize Gemini Client via Streamlit Secrets
-client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+@st.cache_resource
+def get_client():
+    return genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+
+client = get_client()
 
 # Fetch RSS feed and initialize Session State memory for dismissed items
 @st.cache_data(ttl=3600)
