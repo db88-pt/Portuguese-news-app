@@ -184,6 +184,54 @@ if response and hasattr(response, 'text'):
     }}
     </script>
     """
+    import streamlit.components.v1 as components
+
+    speech_html = f"""
+    <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 8px;">
+        <button onclick="playSpeech()" style="padding: 6px 12px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+            ▶️ Ouvir
+        </button>
+        <button onclick="pauseSpeech()" style="padding: 6px 12px; background-color: #e65c00; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+            ⏸️ Pausa
+        </button>
+        <button onclick="stopSpeech()" style="padding: 6px 12px; background-color: #cc0000; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+            ⏹️ Parar
+        </button>
+    </div>
+
+    <script>
+    let utterance = null;
+
+    function cleanText(rawText) {{
+        // Strip out markdown symbols like #, *, or - so it reads naturally
+        return rawText.replace(/[#*_-]/g, '');
+    }}
+
+    function playSpeech() {{
+        if (window.speechSynthesis.paused && utterance) {{
+            window.speechSynthesis.resume();
+            return;
+        }}
+        
+        window.speechSynthesis.cancel(); // Stop any active speech
+        
+        const text = cleanText({repr(response.text)});
+        utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-PT';
+        window.speechSynthesis.speak(utterance);
+    }}
+
+    function pauseSpeech() {{
+        if (window.speechSynthesis.speaking) {{
+            window.speechSynthesis.pause();
+        }}
+    }}
+
+    function stopSpeech() {{
+        window.speechSynthesis.cancel();
+    }}
+    </script>
+    """
     components.html(speech_html, height=60)
 
 st.markdown(f"[Ler artigo completo na source]({current_article.link})")
