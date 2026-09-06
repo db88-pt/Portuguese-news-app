@@ -101,12 +101,15 @@ if display_article and current_article:
             break  # Success! Exit the loop immediately.
         except Exception as e:
             if "503" in str(e) and attempt < max_retries - 1:
-                time.sleep(2)  # Wait 2 seconds before trying again
+                time.sleep(2)  # Transient error — wait, then let the loop try again
+            elif "503" in str(e):
+                # Last attempt, still failing
+                st.error(f"Erro ao carregar tradução após tentativas: {e}")
+                break
             else:
-                if attempt == max_retries - 1:
-                    st.error(f"Erro ao carregar tradução após tentativas: {e}")
-                else:
-                    st.error(f"Erro ao carregar tradução: {e}")
+                # Not a 503 — retrying won't help, stop now
+                st.error(f"Erro ao carregar tradução: {e}")
+                break
 
     if response and hasattr(response, 'text'):
         st.markdown(response.text)
