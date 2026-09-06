@@ -3,6 +3,7 @@ import feedparser
 from google import genai
 import time
 import json
+import re
 
 # Mobile UI styling cleanup
 st.markdown("""
@@ -126,7 +127,21 @@ if display_article and current_article:
             st.session_state.gemini_cache[cache_key] = full_text
 
     if full_text:
-        st.markdown(full_text)
+        parts = re.split(r'(Vocabulário|Notas|Vocabulary|Notes)', full_text, maxsplit=1, flags=re.IGNORECASE)
+        story_text = parts[0].strip()
+        notes_text = ''.join(parts[1:]).strip() if len(parts) > 1 else ''
+
+        story_lines = story_text.split('\n', 1)
+        headline = story_lines[0].strip()
+        body = story_lines[1].strip() if len(story_lines) > 1 else ''
+
+        st.markdown(headline)
+
+        with st.expander("👁️ Mostrar artigo"):
+            st.markdown(body)
+
+        if notes_text:
+            st.markdown(notes_text)
         
         import streamlit.components.v1 as components
 
