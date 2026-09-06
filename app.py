@@ -70,7 +70,7 @@ if display_article and current_article:
     Keep the original facts and context intact.
     Adjust vocabulary, sentence complexity and article length and structure to broadly match CEFR level {selected_level}.
     Output the rewritten Portuguese text, but add brief outro notes if this is suitable.
-    Provide clear contextual vocabulary notes for key terms and words. These should be in English and provide context and guidance 
+    Provide clear contextual vocabulary notes for key terms and words. Both the vocabulary and notes sections should be in English and provide context and guidance 
 
     Instructions for A1 Level:
     - Keep sentences extremely short (max 5-8 words per sentence)
