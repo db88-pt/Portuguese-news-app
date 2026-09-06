@@ -162,6 +162,5 @@ for attempt in range(max_retries):
                 st.error(f"Erro ao carregar tradução após tentativas: {e}")
             else:
                 st.error(f"Erro ao carregar tradução: {e}")
-
-   st.markdown(f"[Ler artigo completo na source]({current_article.link})")
-    
+                
+st.markdown(f"[Ler artigo completo na source]({current_article.link})")
