@@ -165,5 +165,25 @@ for attempt in range(max_retries):
 
 if response and hasattr(response, 'text'):
     st.markdown(response.text)
-                
+    
+    import streamlit.components.v1 as components
+
+    speech_html = f"""
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        <button onclick="speakText()" style="padding: 8px 16px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: sans-serif; font-size: 14px;">
+            🔊 Ouvir em Português
+        </button>
+    </div>
+
+    <script>
+    function speakText() {{
+        const text = {repr(response.text)};
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-PT';
+        window.speechSynthesis.speak(utterance);
+    }}
+    </script>
+    """
+    components.html(speech_html, height=60)
+
 st.markdown(f"[Ler artigo completo na source]({current_article.link})")
