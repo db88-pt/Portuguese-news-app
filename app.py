@@ -4,6 +4,7 @@ from google import genai
 import time
 import json
 import re
+import streamlit.components.v1 as components
 
 # Mobile UI styling cleanup
 st.markdown("""
@@ -142,8 +143,6 @@ if display_article and current_article:
 
         if notes_text:
             st.markdown(notes_text)
-        
-        import streamlit.components.v1 as components
 
         speech_html = f"""
         <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 8px;">
