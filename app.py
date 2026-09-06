@@ -15,7 +15,11 @@ st.markdown("""
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 # Fetch RSS feed and initialize Session State memory for dismissed items
-feed = feedparser.parse("http://feeds.bbci.co.uk/news/rss.xml")
+@st.cache_data(ttl=3600)
+def fetch_feed():
+    return feedparser.parse("http://feeds.bbci.co.uk/news/rss.xml")
+
+feed = fetch_feed()
 
 if "dismissed" not in st.session_state:
     st.session_state.dismissed = []
