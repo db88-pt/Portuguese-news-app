@@ -169,24 +169,6 @@ if response and hasattr(response, 'text'):
     import streamlit.components.v1 as components
 
     speech_html = f"""
-    <div style="margin-top: 10px; margin-bottom: 10px;">
-        <button onclick="speakText()" style="padding: 8px 16px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: sans-serif; font-size: 14px;">
-            🔊 Ouvir em Português
-        </button>
-    </div>
-
-    <script>
-    function speakText() {{
-        const text = {repr(response.text)};
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'pt-PT';
-        window.speechSynthesis.speak(utterance);
-    }}
-    </script>
-    """
-    import streamlit.components.v1 as components
-
-    speech_html = f"""
     <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 8px;">
         <button onclick="playSpeech()" style="padding: 6px 12px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
             ▶️ Ouvir
@@ -203,7 +185,6 @@ if response and hasattr(response, 'text'):
     let utterance = null;
 
     function cleanText(rawText) {{
-        // Strip out markdown symbols like #, *, or - so it reads naturally
         return rawText.replace(/[#*_-]/g, '');
     }}
 
@@ -213,7 +194,7 @@ if response and hasattr(response, 'text'):
             return;
         }}
         
-        window.speechSynthesis.cancel(); // Stop any active speech
+        window.speechSynthesis.cancel();
         
         const text = cleanText({repr(response.text)});
         utterance = new SpeechSynthesisUtterance(text);
